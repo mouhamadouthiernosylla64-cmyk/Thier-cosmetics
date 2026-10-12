@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mon panier - Thier Cosmetics</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Instrument+Sans:wght@400;600&display=swap" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"><link rel="stylesheet" href="css/style.css">
+<style>
+.ligne-panier{display:flex;align-items:center;gap:1.2rem;padding:1rem 0;border-bottom:1px solid var(--line)}
+.ligne-panier img{width:70px;height:70px;object-fit:cover;border-radius:var(--r);flex-shrink:0;background:var(--soft)}
+.ligne-panier .infos{flex:1}
+.ligne-panier .qte{display:flex;align-items:center;gap:.5rem}
+.ligne-panier .qte button{width:30px;height:30px;border:1px solid var(--line);background:var(--white);border-radius:4px;cursor:pointer}
+.panier-total{display:flex;justify-content:space-between;align-items:center;padding:1.4rem 0;font-size:1.2rem;font-weight:700}
+.cart-icon{position:relative;display:inline-flex}
+.cart-icon #cart-badge{position:absolute;top:-8px;right:-10px;background:var(--accent);color:#fff;border-radius:50%;width:20px;height:20px;display:none;align-items:center;justify-content:center;font-size:.72rem;font-weight:700}
+.btn-wa{display:flex;align-items:center;gap:.6rem;justify-content:center;background:#25D366;color:#fff;border:none;width:100%}
+.btn-wa:hover{background:#1DA851}
+</style>
+</head><body><header><div class="wrap"><a class="logo" href="index.html">Thier cosmetics</a><nav aria-label="Navigation principale"><a href="index.html">Accueil</a><a href="produits.html">Produits</a><a href="a-propos.html">À propos</a><a href="contact.html">Contact</a><a href="panier.html" class="cart-icon" aria-label="Panier"><i class="fa-solid fa-bag-shopping"></i><span id="cart-badge">0</span></a></nav></div></header><main>
+
+<div class="page-title"><div class="wrap"><h1>Mon panier</h1></div></div>
+<div class="wrap" style="max-width:700px;padding-bottom:4rem">
+  <div id="liste-panier"></div>
+  <div id="panier-vide" style="display:none;padding:2rem 0;color:var(--slate)">Votre panier est vide pour le moment.</div>
+  <div class="panier-total"><span>Total</span><span id="panier-total-montant">0 FCFA</span></div>
+  <a class="btn btn-wa" id="btn-commander" target="_blank" rel="noopener"><i class="fa-brands fa-whatsapp"></i> Commander via WhatsApp</a>
+</div>
+
+</main><footer><div class="wrap"><div><h3>Thier cosmetics</h3><p>Des soins naturels pour le visage, le corps, et les cheveux. Pour toutes et tous.</p></div><div><h3>Pages</h3><a href="index.html">Accueil</a><a href="produits.html">Produits</a><a href="a-propos.html">À propos</a><a href="contact.html">Contact</a></div><div><h3>Boutique</h3><p>Lundi au samedi<br>9h00 - 17h00</p><p>mouhamadouthiernosylla64@gmail.com</p></div><p class="copy">© 2026 Thier cosmetics. Tous droits réservés.</p></div></footer>
+
+<script src="products-data.js"></script>
+<script src="cart.js"></script>
+<script>
+  function afficherPanier() {
+    const panier = lirePanier();
+    const liste = document.getElementById("liste-panier");
+    const vide = document.getElementById("panier-vide");
+    liste.innerHTML = "";
+    if (panier.length === 0) {
+      vide.style.display = "block";
+      document.getElementById("panier-total-montant").textContent = formaterPrix(0);
+      return;
+    }
+    vide.style.display = "none";
+    let total = 0;
+    panier.forEach(l => {
+      const p = PRODUITS.find(x => x.id === l.id);
+      if (!p) return;
+      const sousTotal = p.prix * l.quantite;
+      total += sousTotal;
+      const div = document.createElement("div");
+      div.className = "ligne-panier";
+      div.innerHTML = `
+        <img src="${p.image}" alt="${p.nom}">
+        <div class="infos">
+          <strong>${p.nom}</strong><br>
+          <span style="color:var(--slate)">${formaterPrix(p.prix)}</span>
+        </div>
+        <div class="qte">
+          <button type="button" data-id="${p.id}" data-delta="-1">−</button>
+          <span>${l.quantite}</span>
+          <button type="button" data-id="${p.id}" data-delta="1">+</button>
+        </div>
+        <strong>${formaterPrix(sousTotal)}</strong>
+      `;
+      liste.appendChild(div);
+    });
+    document.getElementById("panier-total-montant").textContent = formaterPrix(total);
+    document.getElementById("btn-commander").href = lienWhatsAppCommande();
+
+    liste.querySelectorAll("button[data-id]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.id;
+        const delta = parseInt(btn.dataset.delta, 10);
+        const ligne = lirePanier().find(l => l.id === id);
+        const nouvelleQte = (ligne ? ligne.quantite : 0) + delta;
+        changerQuantite(id, nouvelleQte);
+        afficherPanier();
+      });
+    });
+  }
+  document.getElementById("btn-commander").href = lienWhatsAppCommande();
+  afficherPanier();
+</script>
+</body></html>
